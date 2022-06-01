@@ -80,8 +80,8 @@ var blend = false;
 var func_andd = false;
 var func_orr = false;
 var func_xorr = false;
-var func_nott1 = false;
-var func_nott2 = false;
+var nott1 = false;
+var nott2 = false;
 
 //definindo as funções
 function operation(op) {
@@ -94,6 +94,8 @@ function operation(op) {
   op == "func_and" ? (func_andd = true) : (func_andd = false);
   op == "func_or" ? (func_orr = true) : (func_orr = false);
   op == "func_xor" ? (func_xorr = true) : (func_xorr = false);
+  op == "not1" ? (nott1 = true) : (nott1 = false);
+  op == "not2" ? (nott2 = true) : (nott2 = false);
 }
 
 //Pega as imagens
@@ -156,132 +158,166 @@ async function sendImage() {
     const resultXOR = xor(archive1, archive2);
     showImageResult(resultXOR);
   }
-  
-}
 
-function getImageData(inputId, imgId) {
-  return new Promise((resolve, reject) => {
-    const input = document.getElementById(inputId);
-    const img = document.getElementById(imgId);
-
-    img.src = URL.createObjectURL(input.files[0]);
-    console.log(input.files[0]);
-    const imgObj = new Image();
-
-    setTimeout(() => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const context = canvas.getContext("2d");
-      context.drawImage(img, 0, 0);
-      const data = context.getImageData(0, 0, 512, 512);
-
-      return resolve(data.data);
-    }, 200);
-  });
-}
-
-// realiza a multiplicação
-function multiply(firstMatriz, secondMatriz) {
-  const result = [];
-  for (let i = 0; i < firstMatriz.length; i++) {
-    result[i] = firstMatriz[i] * secondMatriz[i];
+  //Not imagem1
+  if (nott1) {
+    const resultNOT = not(archive1, archive2);
+    showImageResult(resultNOT);
   }
 
-  var num = $("#mult").val();
-  for (let j = 0; j < result.length; j++) {
-    result[j] = result[j] * parseFloat(num);
+  //Not imagem2
+  if (nott2) {
+    const resultNOT = not2(archive1, archive2);
+    showImageResult(resultNOT);
+
   }
 
-  return adjustOverFlow(result);
+  function getImageData(inputId, imgId) {
+    return new Promise((resolve, reject) => {
+      const input = document.getElementById(inputId);
+      const img = document.getElementById(imgId);
+
+      img.src = URL.createObjectURL(input.files[0]);
+      console.log(input.files[0]);
+      const imgObj = new Image();
+
+      setTimeout(() => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const context = canvas.getContext("2d");
+        context.drawImage(img, 0, 0);
+        const data = context.getImageData(0, 0, 512, 512);
+
+        return resolve(data.data);
+      }, 200);
+    });
+  }
+
+  // realiza a multiplicação
+  function multiply(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = firstMatriz[i] * secondMatriz[i];
+    }
+
+    var num = $("#mult").val();
+    for (let j = 0; j < result.length; j++) {
+      result[j] = result[j] * parseFloat(num);
+    }
+
+    return adjustOverFlow(result);
+  }
+
+  // realiza o blend
+  function blending(firstMatriz, secondMatriz) {
+    const result = [];
+    var num = $("#blend").val();
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] =
+        parseFloat(num) * firstMatriz[i] +
+        (1 - parseFloat(num)) * secondMatriz[i];
+    }
+
+    return adjustOverFlow(result);
+  }
+
+  // realiza a soma
+  function sum(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = firstMatriz[i] + secondMatriz[i];
+    }
+
+    return adjustOverFlow(result);
+  }
+
+  // realiza a subtração
+  function subtract(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = firstMatriz[i] - secondMatriz[i];
+    }
+
+    return adjustUnderFlow(result);
+  }
+
+  // realiza a divisão
+  function divide(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = firstMatriz[i] / secondMatriz[i];
+    }
+
+    var num = $("#div").val();
+
+    for (let j = 0; j < result.length; j++) {
+      result[j] = result[j] * parseFloat(num);
+    }
+
+    return adjustUnderFlow(result);
+  }
+
+  // realiza a média
+  function mediaa(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = (firstMatriz[i] + secondMatriz[i]) / 2;
+    }
+
+    return adjustOverFlow(result);
+  }
+
+  // realiza o OR
+  function or(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = firstMatriz[i] | secondMatriz[i];
+    }
+
+    return adjustOverFlow(result);
+  }
+
+  // realiza o AND
+  function and(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = firstMatriz[i] & secondMatriz[i];
+    }
+
+    return adjustOverFlow(result);
+  }
+
+  // realiza o XOR
+  function xor(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = firstMatriz[i] ^ secondMatriz[i];
+    }
+
+    return adjustOverFlow(result);
+  }
+
+  // realiza o NOT da imagem 1
+  function not(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = firstMatriz[i] != secondMatriz[i];
+      result[i] = 255 - firstMatriz[i];
+    }
+
+    return adjustOverFlow(result);
+  }
+
+  // realiza o NOT da imagem 2
+  function not2(firstMatriz, secondMatriz) {
+    const result = [];
+    for (let i = 0; i < firstMatriz.length; i++) {
+      result[i] = firstMatriz[i] != secondMatriz[i];
+      result[i] = 255 - secondMatriz[i];
+    }
+
+    return adjustOverFlow(result);
+
+  }
 }
-
-// realiza o blend
-function blending(firstMatriz, secondMatriz) {
-  const result = [];
-  var num = $("#blend").val();
-  for (let i = 0; i < firstMatriz.length; i++) {
-    result[i] =
-      parseFloat(num) * firstMatriz[i] +
-      (1 - parseFloat(num)) * secondMatriz[i];
-  }
-
-  return adjustOverFlow(result);
-}
-
-// realiza a soma
-function sum(firstMatriz, secondMatriz) {
-  const result = [];
-  for (let i = 0; i < firstMatriz.length; i++) {
-    result[i] = firstMatriz[i] + secondMatriz[i];
-  }
-
-  return adjustOverFlow(result);
-}
-
-// realiza a subtração
-function subtract(firstMatriz, secondMatriz) {
-  const result = [];
-  for (let i = 0; i < firstMatriz.length; i++) {
-    result[i] = firstMatriz[i] - secondMatriz[i];
-  }
-
-  return adjustUnderFlow(result);
-}
-
-// realiza a divisão
-function divide(firstMatriz, secondMatriz) {
-  const result = [];
-  for (let i = 0; i < firstMatriz.length; i++) {
-    result[i] = firstMatriz[i] / secondMatriz[i];
-  }
-
-  var num = $("#div").val();
-
-  for (let j = 0; j < result.length; j++) {
-    result[j] = result[j] * parseFloat(num);
-  }
-
-  return adjustUnderFlow(result);
-}
-
-// realiza a média
-function mediaa(firstMatriz, secondMatriz) {
-  const result = [];
-  for (let i = 0; i < firstMatriz.length; i++) {
-    result[i] = (firstMatriz[i] + secondMatriz[i]) / 2;
-  }
-
-  return adjustOverFlow(result);
-}
-
-// realiza o OR
-function or(firstMatriz, secondMatriz) {
-  const result = [];
-  for (let i = 0; i < firstMatriz.length; i++) {
-    result[i] = firstMatriz[i] | secondMatriz[i];
-  }
-
-  return adjustOverFlow(result);
-}
-
-// realiza o AND
-function and(firstMatriz, secondMatriz) {
-  const result = [];
-  for (let i = 0; i < firstMatriz.length; i++) {
-    result[i] = firstMatriz[i] & secondMatriz[i];
-  }
-
-  return adjustOverFlow(result);
-}
-
-// realiza o XOR
-function xor(firstMatriz, secondMatriz) {
-  const result = [];
-  for (let i = 0; i < firstMatriz.length; i++) {
-    result[i] = firstMatriz[i] ^ secondMatriz[i];
-  }
-
-  return adjustOverFlow(result);
-}
-
